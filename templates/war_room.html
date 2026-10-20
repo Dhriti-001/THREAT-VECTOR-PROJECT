@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+
+{% block title %}Incident Response War Room | Threat Vector{% endblock %}
+
+{% block content %}
+
+<!-- War Room Header / Emergency HUD -->
+<div class="war-room-header">
+    <div>
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+            <span class="badge badge-red" style="font-size: 0.85rem; padding: 0.35rem 0.75rem;">
+                🚨 INCIDENT SEVERITY: {{ active_incident.severity }}
+            </span>
+            <span class="badge badge-purple" style="font-size: 0.85rem;">
+                {{ active_incident.threat_type }}
+            </span>
+        </div>
+        <h1 style="font-size: 1.6rem; font-weight: 800; color: #fff; margin-top: 0.5rem;">
+            {{ active_incident.title }}
+        </h1>
+        <p style="color: var(--text-secondary); font-size: 0.92rem; margin-top: 0.35rem; max-width: 850px;">
+            {{ active_incident.description }}
+        </p>
+    </div>
+
+    <!-- Live Simulation Clock HUD -->
+    <div style="text-align: right;">
+        <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--threat-malicious); letter-spacing: 0.1em; display: block; margin-bottom: 0.25rem;">
+            INCIDENT CLOCK (T+ ELAPSED)
+        </span>
+        <div class="mission-clock" id="incident-clock">
+            <span>⏱️</span> <span id="clock-display">00:14:32</span>
+        </div>
+        <span style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.25rem; display: block;">Simulated Crisis Protocol</span>
+    </div>
+</div>
+
+<!-- Incident Switcher Tabs -->
+<div style="display: flex; gap: 0.5rem; overflow-x: auto; margin-bottom: 1.5rem;">
+    {% for inc in all_incidents %}
+        <a href="{{ url_for('war_room', incident_id=inc.id) }}" class="btn {% if inc.id == active_incident.id %}btn-primary{% else %}btn-secondary{% endif %}" style="font-size: 0.85rem; padding: 0.5rem 1rem;">
+            Incident #{{ inc.id }}: {{ inc.threat_type }}
+        </a>
+    {% endfor %}
+</div>
+
+<!-- Incident Workflow: Active Phase Decision Card -->
+{% if current_phase_index < total_phases %}
+    <div class="war-phase-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-subtle); padding-bottom: 1rem; margin-bottom: 1.25rem;">
+            <div>
+                <span class="badge badge-cyan" style="font-size: 0.75rem; margin-bottom: 0.35rem;">
+                    STEP {{ current_phase_index + 1 }} OF {{ total_phases }}
+                </span>
+                <h2 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary);">
+                    {{ active_phase.phase_title }}
+                </h2>
+            </div>
+            <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent-cyan);">
+                MAX AWARD: +50 PTS
+            </div>
+        </div>
+
+        <!-- Tactical Scenario Context -->
+        <div style="background: var(--bg-input); border-radius: var(--radius-md); padding: 1rem 1.25rem; border-left: 4px solid var(--accent-purple); margin-bottom: 1.5rem;">
+            <strong style="color: var(--accent-purple); font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.35rem;">
+                SOC Situation Report:
+            </strong>
+            <p style="color: #e2e8f0; font-size: 0.92rem; line-height: 1.6;">
+                {{ active_phase.scenario_context }}
+            </p>
+        </div>
+
+        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem;">
+            {{ active_phase.question }}
+        </h3>
+
+        <!-- Tactical Action Command Choices -->
+        <form action="{{ url_for('submit_war_room_choice') }}" method="POST">
+            <input type="hidden" name="incident_id" value="{{ active_incident.id }}">
+            <input type="hidden" name="phase_index" value="{{ current_phase_index }}">
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                {% for opt in active_phase.options %}
+                    <label class="war-option-item">
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <input type="radio" name="chosen_option" value="{{ loop.index0 }}" required style="accent-color: var(--accent-cyan); width: 18px; height: 18px; cursor: pointer;">
+                            <span style="font-size: 0.95rem; color: #f1f5f9; font-weight: 500;">
+                                {{ opt.text }}
+                            </span>
+                        </div>
+                        <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--accent-cyan); white-space: nowrap; margin-left: 1rem;">
+                            Execute &rarr;
+                        </span>
+                    </label>
+                {% endfor %}
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-malicious" style="padding: 0.75rem 1.75rem; font-size: 0.95rem;">
+                    ⚡ Execute Tactical Command &rarr;
+                </button>
+            </div>
+        </form>
+    </div>
+
+{% else %}
+    <!-- Debrief & Incident Resolution Screen -->
+    <div style="background: var(--bg-surface); border: 1px solid var(--threat-safe); border-radius: var(--radius-lg); padding: 2.5rem; text-align: center; box-shadow: var(--shadow-card); margin-bottom: 2rem;">
+        <div style="width: 72px; height: 72px; margin: 0 auto 1.25rem; border-radius: 50%; background: var(--threat-safe-bg); border: 2px solid var(--threat-safe); display: flex; align-items: center; justify-content: center; font-size: 2.2rem;">
+            🛡️
+        </div>
+        <h2 style="font-size: 1.75rem; font-weight: 800; color: #fff;">
+            INCIDENT CONTAINMENT PROTOCOL CONCLUDED
+        </h2>
+        <p style="color: var(--text-secondary); font-size: 1rem; max-width: 600px; margin: 0.5rem auto 1.5rem;">
+            You have guided the Computer Security Incident Response Team (CSIRT) through all phases of <strong>{{ active_incident.title }}</strong>.
+        </p>
+
+        <div style="display: inline-flex; gap: 2rem; background: var(--bg-card); padding: 1.25rem 2.5rem; border-radius: var(--radius-md); border: 1px solid var(--border-subtle); margin-bottom: 2rem;">
+            <div>
+                <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; display: block;">Incident Score</span>
+                <span style="font-size: 1.75rem; font-weight: 800; color: var(--accent-cyan); font-family: var(--font-mono);">+{{ incident_total_score }} pts</span>
+            </div>
+            <div>
+                <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; display: block;">Threat Status</span>
+                <span style="font-size: 1.75rem; font-weight: 800; color: var(--threat-safe); font-family: var(--font-mono);">CONTAINED</span>
+            </div>
+        </div>
+
+        <div>
+            <a href="{{ url_for('reset_war_room', incident_id=active_incident.id) }}" class="btn btn-secondary" style="margin-right: 0.75rem;">
+                🔄 Replay Scenario
+            </a>
+            <a href="{{ url_for('war_room') }}" class="btn btn-primary">
+                Next War Room Scenario &rarr;
+            </a>
+        </div>
+    </div>
+{% endif %}
+
+<!-- Post-Incident Tactical Command Log / History -->
+{% if phase_history %}
+<div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 1.5rem;">
+    <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span>📋</span> Incident Response Chronology & Outcome Evaluation
+    </h3>
+
+    <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+        {% for log in phase_history %}
+            <div style="background: var(--bg-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); padding: 1rem; border-left: 4px solid {% if log.points_earned > 0 %}var(--threat-safe){% else %}var(--threat-malicious){% endif %};">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+                    <strong style="color: var(--text-primary); font-size: 0.92rem;">Phase {{ log.phase_index + 1 }} Execution</strong>
+                    <span style="font-family: var(--font-mono); font-size: 0.85rem; font-weight: 700; color: {% if log.points_earned > 0 %}var(--threat-safe){% else %}var(--threat-malicious){% endif %};">
+                        {% if log.points_earned > 0 %}+{% endif %}{{ log.points_earned }} pts
+                    </span>
+                </div>
+                <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5;">
+                    {{ log.outcome_note }}
+                </p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Simulated Incident Response Countdown / Clock
+    let totalSeconds = 872;
+    setInterval(() => {
+        totalSeconds++;
+        const hrs = String(Math.floor(totalSeconds / 3600)).padStart(2, '0');
+        const mins = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, '0');
+        const secs = String(totalSeconds % 60).padStart(2, '0');
+        const clockEl = document.getElementById('clock-display');
+        if (clockEl) {
+            clockEl.textContent = `${hrs}:${mins}:${secs}`;
+        }
+    }, 1000);
+</script>
+{% endblock %}

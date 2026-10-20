@@ -1,0 +1,262 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard | Threat Vector SOC{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <div class="page-title">
+            <span>🛡️</span> Security Operations Command Center
+        </div>
+        <p class="page-subtitle">
+            Welcome back, Analyst <span style="color: var(--accent-cyan); font-weight: 700;">{{ current_user.username }}</span>. System integrity nominal. Continuous training modules active.
+        </p>
+    </div>
+    <div>
+        <a href="{{ url_for('next_drill') }}" class="btn btn-primary">
+            🚀 Launch Next Drill &rarr;
+        </a>
+    </div>
+</div>
+
+<!-- SOC Key Metrics Grid -->
+<div class="metric-grid">
+    <div class="metric-card">
+        <div class="metric-icon-box metric-icon-blue">
+            <span>🎯</span>
+        </div>
+        <div class="metric-data">
+            <h4>Defense Score</h4>
+            <div class="metric-value">{{ current_user.defense_score }} <span style="font-size: 0.85rem; color: var(--accent-cyan); font-weight: normal;">pts</span></div>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-icon-box metric-icon-green">
+            <span>⚡</span>
+        </div>
+        <div class="metric-data">
+            <h4>Trainee Accuracy</h4>
+            <div class="metric-value">{{ accuracy_pct }}<span style="font-size: 0.85rem; color: var(--threat-safe); font-weight: normal;">%</span></div>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-icon-box metric-icon-purple">
+            <span>📚</span>
+        </div>
+        <div class="metric-data">
+            <h4>Drills Mastered</h4>
+            <div class="metric-value">{{ current_user.drills_completed }} <span style="font-size: 0.85rem; color: var(--accent-purple); font-weight: normal;">/ {{ total_drills }}</span></div>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-icon-box metric-icon-red">
+            <span>🚩</span>
+        </div>
+        <div class="metric-data">
+            <h4>CTF Flags Captured</h4>
+            <div class="metric-value">{{ current_user.ctf_completed }} <span style="font-size: 0.85rem; color: var(--threat-malicious); font-weight: normal;">flags</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- Readiness Radar & Defense Posture Banner -->
+<div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 1.5rem; margin-bottom: 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+    <div style="display: flex; align-items: center; gap: 1.25rem;">
+        <div style="width: 64px; height: 64px; border-radius: 50%; background: radial-gradient(circle, rgba(56,189,248,0.2) 0%, rgba(15,23,42,1) 80%); border: 2px solid var(--accent-cyan); display: flex; align-items: center; justify-content: center; font-size: 1.8rem; box-shadow: 0 0 15px var(--accent-cyan-glow);">
+            {% if readiness_score >= 75 %}🛡️{% elif readiness_score >= 50 %}⚠️{% else %}⚡{% endif %}
+        </div>
+        <div>
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <h3 style="font-size: 1.25rem; font-weight: 700; color: var(--text-primary);">Personal Threat Readiness Rating</h3>
+                <span class="badge {% if readiness_score >= 75 %}badge-green{% elif readiness_score >= 50 %}badge-cyan{% else %}badge-amber{% endif %}">
+                    {{ readiness_status }}
+                </span>
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.88rem; margin-top: 0.25rem;">
+                Calculated across simulation accuracy, indicator attribution, and tactical containment decisions.
+            </p>
+        </div>
+    </div>
+
+    <div style="min-width: 260px; flex: 1; max-width: 400px;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600; margin-bottom: 0.4rem;">
+            <span style="color: var(--text-secondary);">DEFENSE RESILIENCE INDEX</span>
+            <span style="color: var(--accent-cyan); font-family: var(--font-mono);">{{ readiness_score }} / 100</span>
+        </div>
+        <div style="height: 10px; background: var(--bg-input); border-radius: 9999px; overflow: hidden; border: 1px solid var(--border-subtle);">
+            <div style="width: {{ readiness_score }}%; height: 100%; background: linear-gradient(90deg, var(--accent-cyan), #10b981); border-radius: 9999px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Core Six Features Launchpad -->
+<h2 style="font-size: 1.3rem; font-weight: 700; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+    <span>⚡</span> Tactical Defense Modules
+</h2>
+
+<div class="features-grid">
+
+    <!-- Feature 1: Drills -->
+    <div class="feature-card">
+        <div>
+            <div class="feature-header">
+                <div class="feature-icon-badge" style="color: var(--accent-cyan);">🎯</div>
+                <div>
+                    <h3 class="feature-title">Simulation Drills</h3>
+                    <span class="badge badge-cyan">28+ Realistic Scenarios</span>
+                </div>
+            </div>
+            <p class="feature-desc">
+                Interactive real-world simulations covering Phishing, SMS OTP Scams, Executive BEC Fraud, QR-Code Quishing, and genuine authentic memos. Experience seamless continuous training that never abruptly stops.
+            </p>
+        </div>
+        <div class="feature-footer">
+            <span style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">Continuous Flow Active</span>
+            <a href="{{ url_for('drills') }}" class="btn btn-primary" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
+                Start Drills &rarr;
+            </a>
+        </div>
+    </div>
+
+    <!-- Feature 2: AI Inspector -->
+    <div class="feature-card">
+        <div>
+            <div class="feature-header">
+                <div class="feature-icon-badge" style="color: var(--accent-purple);">🔍</div>
+                <div>
+                    <h3 class="feature-title">AI Threat Inspector</h3>
+                    <span class="badge badge-purple">Scikit-learn ML Model</span>
+                </div>
+            </div>
+            <p class="feature-desc">
+                Analyze suspicious text snippets, email headers, or URLs using a TF-IDF Logistic Regression classifier with heuristic feature extraction, confidence scoring, and MITRE tactic mapping.
+            </p>
+        </div>
+        <div class="feature-footer">
+            <span style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">NLP + Heuristic Engine</span>
+            <a href="{{ url_for('inspector') }}" class="btn btn-secondary" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
+                Inspect Text/URL &rarr;
+            </a>
+        </div>
+    </div>
+
+    <!-- Feature 3: CTF Range -->
+    <div class="feature-card">
+        <div>
+            <div class="feature-header">
+                <div class="feature-icon-badge" style="color: var(--threat-safe);">🚩</div>
+                <div>
+                    <h3 class="feature-title">CTF Tactical Range</h3>
+                    <span class="badge badge-green">Hands-on Challenges</span>
+                </div>
+            </div>
+            <p class="feature-desc">
+                Investigate server authentication logs, decode obfuscated web shells, break ROT13 ciphers, analyze Base64 PowerShell droppers, and extract SQL injection footprints.
+            </p>
+        </div>
+        <div class="feature-footer">
+            <span style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">6 Tactical Missions</span>
+            <a href="{{ url_for('ctf') }}" class="btn btn-secondary" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
+                Enter Range &rarr;
+            </a>
+        </div>
+    </div>
+
+    <!-- Feature 4: War Room -->
+    <div class="feature-card">
+        <div>
+            <div class="feature-header">
+                <div class="feature-icon-badge" style="color: var(--threat-malicious);">🚨</div>
+                <div>
+                    <h3 class="feature-title">Incident War Room</h3>
+                    <span class="badge badge-red">SOC Emergency Sim</span>
+                </div>
+            </div>
+            <p class="feature-desc">
+                Step into the shoes of an Incident Response Lead during an enterprise ransomware outbreak, credential stuffing wave, or executive spear-phishing exfiltration. Execute tactical containment decisions under time pressure.
+            </p>
+        </div>
+        <div class="feature-footer">
+            <span style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">Multi-Phase Crisis</span>
+            <a href="{{ url_for('war_room') }}" class="btn btn-secondary" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
+                Enter War Room &rarr;
+            </a>
+        </div>
+    </div>
+
+    <!-- Feature 5: Leaderboard -->
+    <div class="feature-card">
+        <div>
+            <div class="feature-header">
+                <div class="feature-icon-badge" style="color: var(--threat-warning);">🏆</div>
+                <div>
+                    <h3 class="feature-title">Defense Leaderboard</h3>
+                    <span class="badge badge-amber">Peer Ranking</span>
+                </div>
+            </div>
+            <p class="feature-desc">
+                Benchmark your cybersecurity defense score, accuracy percentage, and scenario completion tally against peer trainees and SOC analysts on the global defense ladder.
+            </p>
+        </div>
+        <div class="feature-footer">
+            <span style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">Current Rank: #{{ user_rank }}</span>
+            <a href="{{ url_for('leaderboard') }}" class="btn btn-secondary" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
+                View Ladder &rarr;
+            </a>
+        </div>
+    </div>
+
+    <!-- Feature 6: Analytics -->
+    <div class="feature-card">
+        <div>
+            <div class="feature-header">
+                <div class="feature-icon-badge" style="color: var(--accent-cyan);">📈</div>
+                <div>
+                    <h3 class="feature-title">Analytics & Risk Profile</h3>
+                    <span class="badge badge-cyan">SOC Intelligence</span>
+                </div>
+            </div>
+            <p class="feature-desc">
+                Deep dive into your personal threat profile. Review category-wise accuracy across OTP, Phishing, and Impersonation, identify your specific behavioral weaknesses, and access your training certificate.
+            </p>
+        </div>
+        <div class="feature-footer">
+            <span style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">Personal Diagnostic</span>
+            <a href="{{ url_for('profile') }}" class="btn btn-secondary" style="padding: 0.45rem 1rem; font-size: 0.85rem;">
+                View Analytics &rarr;
+            </a>
+        </div>
+    </div>
+
+</div>
+
+<!-- Recent Security Operations Audit Feed -->
+<div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 1.5rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+        <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 0.5rem;">
+            <span>📜</span> Live SOC Event & Audit Feed
+        </h3>
+        <span style="font-size: 0.75rem; color: var(--text-muted); font-family: var(--font-mono);">Local Database Events</span>
+    </div>
+
+    {% if audit_logs %}
+        <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+            {% for log in audit_logs %}
+                <div style="display: flex; align-items: center; justify-content: space-between; padding: 0.6rem 0.85rem; background: var(--bg-card); border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); font-size: 0.88rem;">
+                    <div style="display: flex; align-items: center; gap: 0.75rem;">
+                        <span style="font-family: var(--font-mono); color: var(--accent-cyan); font-size: 0.8rem;">[{{ log.created_at }}]</span>
+                        <span style="font-weight: 600; color: var(--text-primary);">{{ log.action }}</span>
+                        <span style="color: var(--text-secondary); font-size: 0.82rem;">{{ log.details }}</span>
+                    </div>
+                    <span style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--text-muted);">{{ log.ip_address }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p style="color: var(--text-muted); font-size: 0.88rem; font-style: italic;">No audit events recorded yet. Launch your first drill above!</p>
+    {% endif %}
+</div>
+{% endblock %}

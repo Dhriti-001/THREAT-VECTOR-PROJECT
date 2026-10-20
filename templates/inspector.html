@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+
+{% block title %}AI Threat & Link Inspector | Threat Vector{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">
+            <span>🔍</span> AI Threat & Link Inspector
+        </div>
+        <p class="page-subtitle">
+            Natural Language & URL threat classifier powered by Scikit-learn Machine Learning (TF-IDF + Logistic Regression).
+        </p>
+    </div>
+    <div style="font-family: var(--font-mono); font-size: 0.82rem; color: var(--accent-cyan); background: var(--bg-card); padding: 0.4rem 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+        MODEL: TF-IDF + Logistic Regression (C=2.5)
+    </div>
+</div>
+
+<!-- Quick Demo Preset Buttons (Viva Friendly) -->
+<div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem 1.25rem; margin-bottom: 1.5rem;">
+    <div style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; letter-spacing: 0.05em; margin-bottom: 0.6rem;">
+        ⚡ Instant Viva Demonstration Presets (Click to Load):
+    </div>
+    <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+        <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;" onclick="loadSample('m365')">
+            🚨 M365 Credential Phish
+        </button>
+        <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;" onclick="loadSample('otp')">
+            🚨 Bank OTP SMS Scam
+        </button>
+        <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;" onclick="loadSample('ceo')">
+            🚨 CEO Gift Card BEC
+        </button>
+        <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;" onclick="loadSample('github')">
+            🛡️ Authentic GitHub Alert
+        </button>
+        <button type="button" class="btn btn-secondary" style="font-size: 0.8rem; padding: 0.35rem 0.75rem;" onclick="loadSample('edu')">
+            🛡️ Authentic University LMS
+        </button>
+    </div>
+</div>
+
+<div class="inspector-container">
+
+    <!-- Left Pane: Input Box -->
+    <div class="inspector-input-area">
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem;">
+            Raw Message, Headers, or URL Payload
+        </h3>
+        <p style="color: var(--text-secondary); font-size: 0.88rem;">
+            Paste suspicious email text, SMS message, link, or subject line for real-time model inference:
+        </p>
+
+        <form action="{{ url_for('inspector') }}" method="POST">
+            <textarea id="sample_input" name="inspect_text" class="inspector-textarea" placeholder="e.g. Urgent: Your account has been suspended. Click http://bank-verify.xyz/login immediately to enter your password and OTP..." required>{{ input_text }}</textarea>
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <button type="button" class="btn btn-secondary" style="font-size: 0.85rem;" onclick="clearInput()">
+                    Clear Input
+                </button>
+                <button type="submit" class="btn btn-primary" style="padding: 0.65rem 1.75rem;">
+                    🚀 Run AI Deep Inspection &rarr;
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Right Pane: Analysis & Results Output -->
+    <div class="inspector-result-card">
+        {% if result %}
+            <div>
+                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div>
+                        <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em; display: block;">Machine Learning Classification</span>
+                        {% if result.is_malicious %}
+                            <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--threat-malicious); margin-top: 0.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <span>🚨</span> MALICIOUS THREAT
+                            </h2>
+                        {% else %}
+                            <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--threat-safe); margin-top: 0.2rem; display: flex; align-items: center; gap: 0.5rem;">
+                                <span>🛡️</span> SAFE / BENIGN
+                            </h2>
+                        {% endif %}
+                    </div>
+                    <span class="badge {% if result.is_malicious %}badge-red{% else %}badge-green{% endif %}">
+                        {{ result.risk_level }}
+                    </span>
+                </div>
+
+                <!-- Confidence Progress Bar -->
+                <div class="confidence-meter-container">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: 600;">
+                        <span style="color: var(--text-secondary);">MODEL CONFIDENCE:</span>
+                        <span style="color: {% if result.is_malicious %}var(--threat-malicious){% else %}var(--threat-safe){% endif %}; font-family: var(--font-mono);">
+                            {{ result.confidence }}%
+                        </span>
+                    </div>
+                    <div class="confidence-bar-bg">
+                        <div class="confidence-bar-fill {% if result.is_malicious %}confidence-bar-malicious{% else %}confidence-bar-safe{% endif %}" style="width: {{ result.confidence }}%;"></div>
+                    </div>
+                </div>
+
+                <!-- Detected Heuristics Flags -->
+                <div style="margin-bottom: 1.25rem;">
+                    <div style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--accent-cyan); letter-spacing: 0.05em; margin-bottom: 0.5rem;">
+                        Heuristic Rule Detections:
+                    </div>
+                    {% if result.heuristics %}
+                        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                            {% for flag in result.heuristics %}
+                                <div style="font-size: 0.85rem; padding: 0.35rem 0.65rem; background: var(--bg-input); border-radius: var(--radius-sm); border-left: 3px solid var(--threat-warning); color: #fde68a;">
+                                    ⚠️ {{ flag }}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div style="font-size: 0.85rem; color: #6ee7b7; background: var(--threat-safe-bg); padding: 0.4rem 0.75rem; border-radius: var(--radius-sm);">
+                            ✓ No suspicious heuristics or high-risk URL patterns identified.
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Extracted Model Signals / Keywords -->
+                {% if result.keywords %}
+                <div style="margin-bottom: 1.25rem;">
+                    <div style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--accent-purple); letter-spacing: 0.05em; margin-bottom: 0.4rem;">
+                        Key Signal Tokens:
+                    </div>
+                    <div style="display: flex; flex-wrap: wrap; gap: 0.35rem;">
+                        {% for kw in result.keywords %}
+                            <span style="background: rgba(129, 140, 248, 0.15); border: 1px solid rgba(129, 140, 248, 0.3); color: var(--accent-purple); font-family: var(--font-mono); font-size: 0.78rem; padding: 0.2rem 0.5rem; border-radius: 4px;">
+                                {{ kw }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+
+            </div>
+
+            <!-- Recommendation & MITRE Mapping -->
+            <div style="background: var(--bg-card); border-radius: var(--radius-md); padding: 1rem; border: 1px solid var(--border-subtle); margin-top: 1rem;">
+                <div style="font-size: 0.78rem; font-weight: 700; text-transform: uppercase; color: var(--accent-cyan); letter-spacing: 0.05em; margin-bottom: 0.3rem;">
+                    SOC Defense Recommendation:
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+                    {{ result.recommendation }}
+                </p>
+                <div style="margin-top: 0.5rem;">
+                    <span style="font-size: 0.72rem; color: var(--text-muted); font-family: var(--font-mono);">
+                        MITRE Tactic: {{ result.mitre }}
+                    </span>
+                </div>
+            </div>
+
+        {% else %}
+            <!-- Initial Empty State -->
+            <div style="text-align: center; padding: 3rem 1rem; color: var(--text-muted);">
+                <div style="font-size: 3rem; margin-bottom: 1rem;">🤖</div>
+                <h4 style="font-size: 1.1rem; color: var(--text-primary); margin-bottom: 0.5rem;">Ready for Threat Analysis</h4>
+                <p style="font-size: 0.88rem; max-width: 320px; margin: 0 auto;">
+                    Paste any suspicious text or click one of the Viva Demonstration Presets above to observe real-time classification.
+                </p>
+            </div>
+        {% endif %}
+    </div>
+
+</div>
+
+<!-- Viva Theory & Architecture Breakdown -->
+<div style="margin-top: 2rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 1.5rem;">
+    <h3 style="font-size: 1.1rem; font-weight: 700; color: var(--accent-cyan); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span>🎓</span> College Viva Concept: How This Machine Learning Feature Works
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem; margin-top: 1rem; font-size: 0.88rem; color: var(--text-secondary);">
+        <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <strong style="color: var(--text-primary); display: block; margin-bottom: 0.3rem;">1. TF-IDF Vectorization</strong>
+            Converts raw textual messages into numerical feature vectors by weighting term frequency ($TF$) inversely against document frequency ($IDF$). High-signal indicators like 'urgent', 'otp', 'expire', and '.top' receive elevated weights.
+        </div>
+        <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <strong style="color: var(--text-primary); display: block; margin-bottom: 0.3rem;">2. Logistic Regression Classifier</strong>
+            Applies the logistic sigmoid function $\sigma(z) = \frac{1}{1 + e^{-z}}$ to map arbitrary linear combinations of features to a calibrated probability between 0% (Benign) and 100% (Malicious).
+        </div>
+        <div style="background: var(--bg-card); padding: 1rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+            <strong style="color: var(--text-primary); display: block; margin-bottom: 0.3rem;">3. Heuristic Cyber Defense Rules</strong>
+            Complements the statistical ML model with deterministic rules inspecting top-level domains (.xyz, .top, .ru, .club), suspicious IP addresses, and credential harvesting patterns.
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const samples = {
+        m365: "Action Required: Your Microsoft 365 password expires in 2 hours. To retain access to your corporate inbox, verify your credentials immediately at http://m365-verify.top/auth",
+        otp: "Chase Fraud Dept: Did you authorize $849.00 at BestBuy? Reply with the 6-digit one-time passcode (OTP) sent to your phone immediately to cancel the charge.",
+        ceo: "CONFIDENTIAL: I am locked in an executive board meeting. Purchase 5 Apple Gift Cards ($100 each) right now, scratch the back, and email photos of codes directly to me. - CEO",
+        github: "Security alert: Dependabot detected a high severity vulnerability in lodash package. Review automated pull request at https://github.com/my-org/project/security/dependabot/1",
+        edu: "Notice: Official Fall semester final grades are now available. Review your transcript on your student portal at https://myportal.stateuniversity.edu"
+    };
+
+    function loadSample(key) {
+        document.getElementById('sample_input').value = samples[key];
+    }
+
+    function clearInput() {
+        document.getElementById('sample_input').value = '';
+    }
+</script>
+{% endblock %}

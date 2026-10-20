@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Threat Vector | Cybersecurity Awareness & Training{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+
+    <!-- Unified Top Navigation Bar -->
+    <nav class="soc-navbar">
+        <div class="nav-container">
+            <a href="{{ url_for('index') }}" class="brand-logo">
+                <div class="brand-icon">⚡</div>
+                <div class="brand-title">Threat Vector <span style="font-size: 0.65rem; color: var(--accent-cyan); font-family: var(--font-mono); letter-spacing: 0.1em; padding: 2px 6px; background: rgba(56, 189, 248, 0.12); border-radius: 4px; border: 1px solid rgba(56,189,248,0.3); vertical-align: middle;">SOC v2.0</span></div>
+            </a>
+
+            {% if session.get('user_id') %}
+            <ul class="nav-links">
+                <li><a href="{{ url_for('index') }}" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">📊 Dashboard</a></li>
+                <li><a href="{{ url_for('drills') }}" class="nav-link {% if active_page == 'drills' %}active{% endif %}">🎯 Drills</a></li>
+                <li><a href="{{ url_for('inspector') }}" class="nav-link {% if active_page == 'inspector' %}active{% endif %}">🔍 AI Inspector</a></li>
+                <li><a href="{{ url_for('ctf') }}" class="nav-link {% if active_page == 'ctf' %}active{% endif %}">🚩 CTF Range</a></li>
+                <li><a href="{{ url_for('war_room') }}" class="nav-link {% if active_page == 'war_room' %}active{% endif %}">🚨 War Room</a></li>
+                <li><a href="{{ url_for('leaderboard') }}" class="nav-link {% if active_page == 'leaderboard' %}active{% endif %}">🏆 Leaderboard</a></li>
+                <li><a href="{{ url_for('profile') }}" class="nav-link {% if active_page == 'profile' %}active{% endif %}">📈 Analytics</a></li>
+            </ul>
+
+            <div class="nav-user-panel">
+                <div class="user-badge">
+                    <span class="user-status-dot"></span>
+                    <span style="font-weight: 600; color: var(--text-primary);">{{ session.get('username') }}</span>
+                    <span class="user-score">{{ current_user.defense_score if current_user else 0 }} pts</span>
+                </div>
+                <a href="{{ url_for('logout') }}" class="btn-logout">Logout</a>
+            </div>
+            {% endif %}
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-wrapper">
+        <!-- Flash Alerts -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-container">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category if category != 'error' else 'danger' }}">
+                            <span>{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- SOC Footer -->
+    <footer class="soc-footer">
+        <div>
+            <strong>Threat Vector</strong> &mdash; Interactive Cybersecurity Awareness & Defensive Training Platform
+        </div>
+        <div style="margin-top: 0.35rem; color: var(--text-muted); font-size: 0.78rem;">
+            Built with Python Flask, SQLite & Scikit-learn Machine Learning &bull; College Capstone Project &bull; Fully Local Architecture
+        </div>
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

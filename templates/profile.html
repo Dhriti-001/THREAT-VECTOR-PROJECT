@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+
+{% block title %}Analytics & Threat Profile | Threat Vector{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">
+            <span>📈</span> Trainee Threat Analytics & Risk Profile
+        </div>
+        <p class="page-subtitle">
+            Diagnostic performance assessment across attack vectors, weakness identification, and readiness certification.
+        </p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+        <button onclick="window.print()" class="btn btn-secondary" style="font-size: 0.85rem;">
+            🖨️ Export / Print Certificate
+        </button>
+    </div>
+</div>
+
+<!-- Personal Scorecard Overview Grid -->
+<div class="metric-grid">
+    <div class="metric-card">
+        <div class="metric-icon-box metric-icon-blue">
+            <span>🛡️</span>
+        </div>
+        <div class="metric-data">
+            <h4>Defense Readiness</h4>
+            <div class="metric-value">{{ readiness_score }}<span style="font-size: 0.85rem; color: var(--accent-cyan); font-weight: normal;"> / 100</span></div>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-icon-box metric-icon-green">
+            <span>🎯</span>
+        </div>
+        <div class="metric-data">
+            <h4>Detection Accuracy</h4>
+            <div class="metric-value">{{ accuracy_pct }}<span style="font-size: 0.85rem; color: var(--threat-safe); font-weight: normal;">%</span></div>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-icon-box metric-icon-purple">
+            <span>📊</span>
+        </div>
+        <div class="metric-data">
+            <h4>Total Drills Tested</h4>
+            <div class="metric-value">{{ total_responses }} <span style="font-size: 0.85rem; color: var(--accent-purple); font-weight: normal;">drills</span></div>
+        </div>
+    </div>
+
+    <div class="metric-card">
+        <div class="metric-icon-box metric-icon-red">
+            <span>⚠️</span>
+        </div>
+        <div class="metric-data">
+            <h4>Misidentifications</h4>
+            <div class="metric-value">{{ misidentifications }} <span style="font-size: 0.85rem; color: var(--threat-malicious); font-weight: normal;">errors</span></div>
+        </div>
+    </div>
+</div>
+
+<!-- Weakness Detection & Automated SOC Recommendation Banner -->
+<div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 1.75rem; margin-bottom: 2rem;">
+    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; border-bottom: 1px solid var(--border-subtle); padding-bottom: 0.75rem;">
+        <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--threat-warning); display: flex; align-items: center; gap: 0.5rem;">
+            <span>⚠️</span> Automated SOC Threat Weakness Diagnosis
+        </h3>
+        <span class="badge badge-amber">Behavioral Analysis</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+        <div style="background: var(--bg-card); padding: 1.25rem; border-radius: var(--radius-md); border-left: 4px solid var(--threat-warning);">
+            <strong style="color: #fde68a; font-size: 0.95rem; display: block; margin-bottom: 0.35rem;">
+                {{ primary_weakness_title }}
+            </strong>
+            <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6;">
+                {{ primary_weakness_detail }}
+            </p>
+        </div>
+
+        <div style="background: var(--bg-card); padding: 1.25rem; border-radius: var(--radius-md); border-left: 4px solid var(--accent-cyan);">
+            <strong style="color: var(--accent-cyan); font-size: 0.95rem; display: block; margin-bottom: 0.35rem;">
+                Recommended Action Plan:
+            </strong>
+            <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.6;">
+                {{ weakness_remediation }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Category-Wise Performance Progress Bars -->
+<div style="background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 1.75rem; margin-bottom: 2rem;">
+    <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 1.25rem; display: flex; align-items: center; gap: 0.5rem;">
+        <span>🎯</span> Threat Vector Proficiency Breakdown
+    </h3>
+
+    <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+        {% for cat in category_stats %}
+            <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.88rem; font-weight: 600; margin-bottom: 0.4rem;">
+                    <span style="color: var(--text-primary);">{{ cat.name }}</span>
+                    <span style="font-family: var(--font-mono); color: {% if cat.pct >= 75 %}var(--threat-safe){% elif cat.pct >= 50 %}var(--accent-cyan){% else %}var(--threat-warning){% endif %};">
+                        {{ cat.correct }} / {{ cat.total }} ({{ cat.pct }}%)
+                    </span>
+                </div>
+                <div style="height: 10px; background: var(--bg-input); border-radius: 9999px; overflow: hidden; border: 1px solid var(--border-subtle);">
+                    <div style="width: {{ cat.pct }}%; height: 100%; background: linear-gradient(90deg, var(--accent-cyan), {% if cat.pct >= 75 %}#10b981{% elif cat.pct >= 50 %}#38bdf8{% else %}#f59e0b{% endif %}); border-radius: 9999px;"></div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Viva-Ready Certificate of Defense Readiness -->
+<div style="background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95)); border: 2px solid var(--accent-cyan); border-radius: var(--radius-lg); padding: 2.5rem; text-align: center; position: relative; overflow: hidden; box-shadow: 0 0 30px rgba(56, 189, 248, 0.15);">
+    <div style="position: absolute; top: -10px; right: -10px; width: 100px; height: 100px; background: radial-gradient(circle, var(--accent-cyan-glow) 0%, transparent 70%);"></div>
+
+    <div style="display: inline-block; width: 60px; height: 60px; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); border-radius: 50%; line-height: 60px; font-size: 1.8rem; margin-bottom: 1rem; color: #070b14;">
+        ⚡
+    </div>
+
+    <h2 style="font-size: 1.6rem; font-weight: 800; letter-spacing: 0.05em; background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase;">
+        Certificate of Cybersecurity Defense Readiness
+    </h2>
+    <p style="color: var(--text-secondary); font-size: 0.88rem; margin-top: 0.35rem;">
+        Threat Vector SOC Simulation Laboratory &bull; Academic Year 2026
+    </p>
+
+    <div style="max-width: 650px; margin: 1.5rem auto; border-top: 1px solid var(--border-subtle); border-bottom: 1px solid var(--border-subtle); padding: 1.25rem 0;">
+        <p style="color: var(--text-primary); font-size: 1.1rem; line-height: 1.6;">
+            This certifies that Trainee Analyst <strong style="color: var(--accent-cyan); font-family: var(--font-mono); font-size: 1.25rem;">{{ current_user.username }}</strong>
+            has fulfilled active defensive cyber simulation requirements with an overall defense score of
+            <strong style="color: #10b981; font-family: var(--font-mono);">{{ current_user.defense_score }} Points</strong>
+            and demonstrated tactical proficiency in phishing analysis, log forensics, and multi-phase incident containment.
+        </p>
+    </div>
+
+    <div style="display: flex; justify-content: space-around; max-width: 600px; margin: 0 auto; font-size: 0.82rem; color: var(--text-muted); font-family: var(--font-mono);">
+        <div>
+            <span style="display: block; color: var(--text-primary); font-weight: 700;">{{ current_user.role }}</span>
+            Operational Designation
+        </div>
+        <div>
+            <span style="display: block; color: #10b981; font-weight: 700;">VERIFIED ACCREDITATION</span>
+            Status
+        </div>
+        <div>
+            <span style="display: block; color: var(--accent-cyan); font-weight: 700;">LOCAL SEC-ID: TV-{{ current_user.id }}</span>
+            Analyst Hash
+        </div>
+    </div>
+</div>
+
+{% endblock %}

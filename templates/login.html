@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Threat Vector | Trainee Authentication</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+</head>
+<body style="background: radial-gradient(circle at 50% 30%, #111a2f 0%, #070b14 75%);">
+
+    <div class="auth-wrapper">
+        <div class="auth-card">
+            
+            <div class="auth-logo-center">
+                <div style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; background: linear-gradient(135deg, var(--accent-cyan), var(--accent-purple)); border-radius: 12px; margin-bottom: 0.75rem; box-shadow: 0 0 20px var(--accent-cyan-glow);">
+                    <span style="font-size: 1.75rem;">⚡</span>
+                </div>
+                <h1 style="font-size: 1.6rem; font-weight: 800; letter-spacing: 0.05em; background: linear-gradient(90deg, #38bdf8, #818cf8); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">THREAT VECTOR</h1>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0.25rem;">Cybersecurity Awareness & Incident Range</p>
+            </div>
+
+            <!-- Flash Alerts -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category if category != 'error' else 'danger' }}" style="padding: 0.75rem 1rem; font-size: 0.85rem;">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <!-- Auth Tabs -->
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab-btn active" id="tab-login-btn" onclick="switchTab('login')">Sign In</button>
+                <button type="button" class="auth-tab-btn" id="tab-register-btn" onclick="switchTab('register')">New Trainee</button>
+            </div>
+
+            <!-- Login Form -->
+            <form id="form-login" action="{{ url_for('login') }}" method="POST">
+                <input type="hidden" name="action" value="login">
+                <div class="form-group">
+                    <label class="form-label" for="login-username">Trainee Call-Sign / Username</label>
+                    <input type="text" id="login-username" name="username" class="form-control" placeholder="e.g. cadet or alex_soc" required autofocus>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="login-password">Access Passcode</label>
+                    <input type="password" id="login-password" name="password" class="form-control" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem; padding: 0.75rem;">
+                    Authenticate to SOC &rarr;
+                </button>
+            </form>
+
+            <!-- Register Form (hidden by default) -->
+            <form id="form-register" action="{{ url_for('login') }}" method="POST" style="display: none;">
+                <input type="hidden" name="action" value="register">
+                <div class="form-group">
+                    <label class="form-label" for="reg-username">Choose Trainee Username</label>
+                    <input type="text" id="reg-username" name="username" class="form-control" placeholder="Letters and numbers (e.g. cyber_sam)" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="reg-password">Create Passcode</label>
+                    <input type="password" id="reg-password" name="password" class="form-control" placeholder="Minimum 4 characters" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="reg-role">Designated Role</label>
+                    <select id="reg-role" name="role" class="form-control" style="background: var(--bg-input); color: var(--text-primary);">
+                        <option value="Security Cadet">Security Cadet (Level 1)</option>
+                        <option value="SOC Junior Analyst">SOC Junior Analyst (Level 2)</option>
+                        <option value="Threat Researcher">Threat Researcher (Level 3)</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-purple" style="width: 100%; margin-top: 0.5rem; padding: 0.75rem;">
+                    Initialize Trainee Profile &rarr;
+                </button>
+            </form>
+
+            <!-- Quick Demo Bypass for Viva Presentation -->
+            <div style="margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px dashed var(--border-subtle); text-align: center;">
+                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block; margin-bottom: 0.6rem;">Viva / Demo Quick Access</span>
+                <form action="{{ url_for('demo_login') }}" method="POST">
+                    <button type="submit" class="btn btn-secondary" style="width: 100%; font-size: 0.85rem; padding: 0.5rem; border-color: rgba(56, 189, 248, 0.4);">
+                        ⚡ Quick Demo Login as Cadet
+                    </button>
+                </form>
+                <p style="font-size: 0.72rem; color: var(--text-muted); margin-top: 0.5rem;">
+                    Pre-configured demo trainee account: <code>cadet</code> / <code>password123</code>
+                </p>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        function switchTab(tab) {
+            const loginForm = document.getElementById('form-login');
+            const regForm = document.getElementById('form-register');
+            const loginBtn = document.getElementById('tab-login-btn');
+            const regBtn = document.getElementById('tab-register-btn');
+
+            if (tab === 'login') {
+                loginForm.style.display = 'block';
+                regForm.style.display = 'none';
+                loginBtn.classList.add('active');
+                regBtn.classList.remove('active');
+            } else {
+                loginForm.style.display = 'none';
+                regForm.style.display = 'block';
+                loginBtn.classList.remove('active');
+                regBtn.classList.add('active');
+            }
+        }
+    </script>
+</body>
+</html>

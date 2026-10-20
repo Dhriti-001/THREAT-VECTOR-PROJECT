@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+
+{% block title %}Cybersecurity Defense Leaderboard | Threat Vector{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">
+            <span>🏆</span> Cybersecurity Defense Leaderboard
+        </div>
+        <p class="page-subtitle">
+            Global ranking ladder of defense analysts, trainees, and incident responders ranked by defensive accuracy and tactical points.
+        </p>
+    </div>
+    <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent-cyan); background: var(--bg-card); padding: 0.4rem 0.85rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+        Your Rank: #{{ current_user_rank }} &bull; {{ current_user.defense_score }} pts
+    </div>
+</div>
+
+<!-- Leaderboard Table Container -->
+<div class="table-container">
+    <table class="soc-table">
+        <thead>
+            <tr>
+                <th style="width: 70px;">Rank</th>
+                <th>Trainee Call-Sign</th>
+                <th>Designation / Role</th>
+                <th style="text-align: right;">Drills Cleared</th>
+                <th style="text-align: right;">CTF Flags</th>
+                <th style="text-align: right;">War Rooms</th>
+                <th style="text-align: right;">Defense Score</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user in trainees %}
+                <tr class="{% if user.id == current_user.id %}current-user-row{% endif %}">
+                    <td>
+                        {% if loop.index == 1 %}
+                            <span class="rank-pill rank-gold">1</span>
+                        {% elif loop.index == 2 %}
+                            <span class="rank-pill rank-silver">2</span>
+                        {% elif loop.index == 3 %}
+                            <span class="rank-pill rank-bronze">3</span>
+                        {% else %}
+                            <span class="rank-pill rank-normal">{{ loop.index }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 0.6rem;">
+                            <span style="font-weight: 700; color: var(--text-primary);">{{ user.username }}</span>
+                            {% if user.id == current_user.id %}
+                                <span class="badge badge-cyan" style="font-size: 0.65rem; padding: 2px 6px;">YOU</span>
+                            {% endif %}
+                        </div>
+                    </td>
+                    <td>
+                        <span class="badge {% if 'Senior' in user.role or 'Hunter' in user.role %}badge-purple{% elif 'Cadet' in user.role %}badge-green{% else %}badge-cyan{% endif %}" style="font-size: 0.75rem;">
+                            {{ user.role }}
+                        </span>
+                    </td>
+                    <td style="text-align: right; font-family: var(--font-mono); color: var(--text-secondary);">
+                        {{ user.drills_completed }}
+                    </td>
+                    <td style="text-align: right; font-family: var(--font-mono); color: var(--threat-safe);">
+                        {{ user.ctf_completed }}
+                    </td>
+                    <td style="text-align: right; font-family: var(--font-mono); color: var(--accent-purple);">
+                        {{ user.warroom_completed }}
+                    </td>
+                    <td style="text-align: right; font-family: var(--font-mono); font-weight: 800; color: var(--accent-cyan); font-size: 1.05rem;">
+                        {{ user.defense_score }} <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">pts</span>
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Gamification Tier Legend -->
+<div style="margin-top: 2rem; background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: 1.5rem;">
+    <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.75rem;">
+        🎖️ Defense Tier Classification
+    </h3>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+        <div style="background: var(--bg-card); padding: 0.85rem; border-radius: var(--radius-sm); border-left: 3px solid #10b981;">
+            <strong style="color: #6ee7b7; font-size: 0.88rem;">Tier 1: Security Cadet</strong>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem;">0 - 499 Defense Points</p>
+        </div>
+        <div style="background: var(--bg-card); padding: 0.85rem; border-radius: var(--radius-sm); border-left: 3px solid #38bdf8;">
+            <strong style="color: #7dd3fc; font-size: 0.88rem;">Tier 2: SOC Analyst</strong>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem;">500 - 999 Defense Points</p>
+        </div>
+        <div style="background: var(--bg-card); padding: 0.85rem; border-radius: var(--radius-sm); border-left: 3px solid #818cf8;">
+            <strong style="color: #a5b4fc; font-size: 0.88rem;">Tier 3: Threat Hunter</strong>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem;">1,000 - 1,499 Defense Points</p>
+        </div>
+        <div style="background: var(--bg-card); padding: 0.85rem; border-radius: var(--radius-sm); border-left: 3px solid #f59e0b;">
+            <strong style="color: #fde68a; font-size: 0.88rem;">Tier 4: CISO Defender</strong>
+            <p style="font-size: 0.78rem; color: var(--text-muted); margin-top: 0.2rem;">1,500+ Defense Points</p>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

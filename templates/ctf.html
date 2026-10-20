@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+
+{% block title %}CTF Tactical Range | Threat Vector{% endblock %}
+
+{% block content %}
+
+<div class="page-header">
+    <div>
+        <div class="page-title">
+            <span>🚩</span> CTF Tactical Range
+        </div>
+        <p class="page-subtitle">
+            Hands-on technical challenges investigating authentication logs, web shells, cryptographic ciphers, and forensic payloads.
+        </p>
+    </div>
+    <div style="display: flex; align-items: center; gap: 1rem;">
+        <span class="badge badge-purple" style="font-size: 0.85rem; padding: 0.4rem 0.8rem;">
+            Flags Captured: {{ solved_count }} / {{ challenges|length }}
+        </span>
+    </div>
+</div>
+
+<!-- CTF Tactical Range Grid -->
+<div class="ctf-grid">
+    {% for challenge in challenges %}
+        <div class="ctf-card {% if challenge.id in solved_ids %}solved{% endif %}">
+            <div>
+                <!-- Challenge Header -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+                    <div>
+                        <span class="badge badge-cyan" style="font-size: 0.75rem; margin-bottom: 0.35rem;">{{ challenge.category }}</span>
+                        <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary);">{{ challenge.title }}</h3>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="badge {% if challenge.difficulty == 'Cadet' %}badge-green{% elif challenge.difficulty == 'Analyst' %}badge-amber{% else %}badge-red{% endif %}">
+                            {{ challenge.difficulty }}
+                        </span>
+                        <div style="font-family: var(--font-mono); font-size: 0.85rem; color: var(--accent-cyan); font-weight: 700; margin-top: 0.25rem;">
+                            +{{ challenge.points }} pts
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Scenario Description -->
+                <p style="color: var(--text-secondary); font-size: 0.88rem; line-height: 1.5; margin-bottom: 0.75rem;">
+                    {{ challenge.description }}
+                </p>
+
+                <!-- Monospace Artifact Preview Box -->
+                <div class="ctf-artifact-box">{{ challenge.artifact_data }}</div>
+
+                <!-- Hint Accordion -->
+                <div style="margin-bottom: 1rem;">
+                    <button type="button" class="btn btn-secondary" style="font-size: 0.78rem; padding: 0.25rem 0.65rem;" onclick="toggleHint('hint-{{ challenge.id }}')">
+                        💡 Toggle Tactical Hint
+                    </button>
+                    <div id="hint-{{ challenge.id }}" style="display: none; margin-top: 0.5rem; font-size: 0.82rem; color: #fde68a; background: var(--threat-warning-bg); border-left: 3px solid var(--threat-warning); padding: 0.4rem 0.75rem; border-radius: 4px;">
+                        {{ challenge.hint }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submission Area or Solved Badge -->
+            <div style="border-top: 1px solid var(--border-subtle); padding-top: 1rem; margin-top: 0.5rem;">
+                {% if challenge.id in solved_ids %}
+                    <div style="display: flex; align-items: center; justify-content: space-between; background: var(--threat-safe-bg); border: 1px solid var(--threat-safe); padding: 0.6rem 1rem; border-radius: var(--radius-sm);">
+                        <span style="color: #6ee7b7; font-weight: 700; font-size: 0.88rem; display: flex; align-items: center; gap: 0.5rem;">
+                            ✓ MISSION SOLVED
+                        </span>
+                        <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--threat-safe);">
+                            Points Credited
+                        </span>
+                    </div>
+                {% else %}
+                    <form action="{{ url_for('submit_ctf') }}" method="POST">
+                        <input type="hidden" name="challenge_id" value="{{ challenge.id }}">
+                        <label style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 600; display: block; margin-bottom: 0.35rem;">
+                            Submit Flag: <code>flag{...}</code>
+                        </label>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <input type="text" name="flag" class="ctf-flag-input" placeholder="e.g. flag{...}" required style="margin-bottom: 0;">
+                            <button type="submit" class="btn btn-purple" style="padding: 0.55rem 1rem; font-size: 0.85rem; white-space: nowrap;">
+                                Capture Flag &rarr;
+                            </button>
+                        </div>
+                    </form>
+                {% endif %}
+            </div>
+
+        </div>
+    {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function toggleHint(elementId) {
+        const hintEl = document.getElementById(elementId);
+        if (hintEl.style.display === 'none' || hintEl.style.display === '') {
+            hintEl.style.display = 'block';
+        } else {
+            hintEl.style.display = 'none';
+        }
+    }
+</script>
+{% endblock %}

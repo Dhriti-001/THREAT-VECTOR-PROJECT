@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Drill Feedback // Scenario #{{ scenario.id }} | Threat Vector{% endblock %}
+
+{% block content %}
+
+<div class="feedback-card">
+
+    <!-- Verdict Banner -->
+    {% if is_correct %}
+        <div class="feedback-banner banner-correct">
+            <span style="font-size: 2.2rem;">🎯</span>
+            <div>
+                <h2 style="font-size: 1.4rem; font-weight: 800; margin: 0;">CORRECT VERDICT ACQUIRED</h2>
+                <p style="font-size: 0.95rem; margin-top: 0.2rem; opacity: 0.95;">
+                    Outstanding defensive analysis! You accurately determined that this communication was 
+                    <strong>{% if scenario.is_malicious %}MALICIOUS{% else %}SAFE / BENIGN{% endif %}</strong>.
+                    <span style="font-weight: 700; color: #10b981; margin-left: 0.5rem; font-family: var(--font-mono);">+{{ score_awarded }} Defense Points Awarded</span>
+                </p>
+            </div>
+        </div>
+    {% else %}
+        <div class="feedback-banner banner-incorrect">
+            <span style="font-size: 2.2rem;">⚠️</span>
+            <div>
+                <h2 style="font-size: 1.4rem; font-weight: 800; margin: 0;">THREAT ASSESSMENT COMPROMISED</h2>
+                <p style="font-size: 0.95rem; margin-top: 0.2rem; opacity: 0.95;">
+                    Incorrect verdict. This communication was actually 
+                    <strong>{% if scenario.is_malicious %}MALICIOUS / HIGH RISK{% else %}SAFE / BENIGN{% endif %}</strong>.
+                    <span style="font-weight: 700; color: #f87171; margin-left: 0.5rem; font-family: var(--font-mono);">+0 Defense Points</span>
+                </p>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Continuous Flow Action Button (Top Prominence) -->
+    <div style="background: var(--bg-card); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.25rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
+        <div>
+            <div style="font-size: 0.85rem; text-transform: uppercase; color: var(--accent-cyan); font-weight: 600; letter-spacing: 0.05em;">Continuous Drill Engine</div>
+            <div style="color: var(--text-secondary); font-size: 0.9rem;">Keep your momentum going! Advance dynamically to the next training simulation.</div>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+            <a href="{{ url_for('next_drill', current_id=scenario.id) }}" class="btn btn-primary" style="padding: 0.75rem 1.75rem; font-size: 1rem;">
+                Next Drill &rarr;
+            </a>
+            <a href="{{ url_for('drills') }}" class="btn btn-secondary">
+                Drills Hub
+            </a>
+        </div>
+    </div>
+
+    <!-- Indicator Breakdown Analysis -->
+    <div class="feedback-section">
+        <h4>Indicator Attribution Analysis</h4>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; margin-top: 0.75rem;">
+            
+            <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem;">
+                <div style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--threat-safe); margin-bottom: 0.5rem;">
+                    Indicators You Correctly Flagged:
+                </div>
+                {% if matched_indicators %}
+                    <ul style="list-style: none; padding: 0;">
+                        {% for mi in matched_indicators %}
+                            <li style="font-size: 0.88rem; color: #6ee7b7; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+                                <span>✓</span> {{ mi }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p style="font-size: 0.82rem; color: var(--text-muted); font-style: italic;">No threat indicators matched.</p>
+                {% endif %}
+            </div>
+
+            <div style="background: var(--bg-input); border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1rem;">
+                <div style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--threat-warning); margin-bottom: 0.5rem;">
+                    Indicators Present in this Scenario:
+                </div>
+                {% if correct_indicators %}
+                    <ul style="list-style: none; padding: 0;">
+                        {% for ci in correct_indicators %}
+                            <li style="font-size: 0.88rem; color: #fde68a; margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.4rem;">
+                                <span>⚡</span> {{ ci }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <p style="font-size: 0.85rem; color: #6ee7b7;">None &mdash; This was an authentic benign message with no malicious indicators.</p>
+                {% endif %}
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Deep Technical Explanation -->
+    <div class="feedback-section" style="background: #090e1a; border: 1px solid var(--border-subtle); border-radius: var(--radius-md); padding: 1.5rem; margin-top: 1.5rem;">
+        <h4>Technical Threat Intelligence Breakdown</h4>
+        <p style="color: #e2e8f0; font-size: 0.95rem; line-height: 1.7; margin-top: 0.5rem;">
+            {{ scenario.explanation }}
+        </p>
+
+        <div style="margin-top: 1.25rem; display: flex; flex-wrap: wrap; align-items: center; gap: 1rem;">
+            <div>
+                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block;">MITRE ATT&CK Mapping</span>
+                <span class="mitre-pill">{{ scenario.mitre_tactic }}</span>
+            </div>
+            <div>
+                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block;">Simulated Vector</span>
+                <span class="badge badge-purple" style="font-size: 0.82rem; margin-top: 0.35rem;">{{ scenario.category }}</span>
+            </div>
+            <div>
+                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; display: block;">Sender Domain Forensics</span>
+                <code style="font-family: var(--font-mono); color: var(--accent-cyan); font-size: 0.85rem; margin-top: 0.35rem; display: inline-block;">{{ scenario.sender }}</code>
+            </div>
+        </div>
+    </div>
+
+    <!-- SOC Defensive Takeaway for Trainee / Viva -->
+    <div style="margin-top: 1.5rem; padding: 1rem 1.25rem; background: rgba(56, 189, 248, 0.06); border-left: 4px solid var(--accent-cyan); border-radius: var(--radius-sm);">
+        <strong style="color: var(--accent-cyan); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Defensive Rule of Thumb for SOC Viva:</strong>
+        <p style="color: var(--text-secondary); font-size: 0.88rem; margin-top: 0.35rem;">
+            {% if scenario.is_malicious %}
+                Always inspect the top-level domain (TLD) and authenticated sender headers before acting on urgent requests. Notice how attackers use urgency to bypass human rational critical thinking.
+            {% else %}
+                Safe communications will never pressure you to reveal credentials, passwords, or OTPs, and their links resolve exclusively to official corporate or university domain hierarchies.
+            {% endif %}
+        </p>
+    </div>
+
+</div>
+
+{% endblock %}

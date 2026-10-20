@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Simulation Drill #{{ scenario.id }} | Threat Vector{% endblock %}
+
+{% block content %}
+
+<!-- Continuous Navigation HUD -->
+<div class="continuous-nav-bar">
+    <div class="drill-progress-indicator">
+        <span style="font-weight: 700; color: var(--accent-cyan); font-family: var(--font-mono);">
+            DRILL {{ current_index }} OF {{ total_scenarios }}
+        </span>
+        <div class="drill-progress-bar-bg">
+            <div class="drill-progress-bar-fill" style="width: {{ progress_pct }}%;"></div>
+        </div>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">
+            ({{ completed_count }} completed)
+        </span>
+    </div>
+
+    <!-- Category Filter Dropdown / Quick Links -->
+    <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <span style="font-size: 0.85rem; color: var(--text-secondary); display: none; @media(min-width: 768px){display:inline;}">Vector:</span>
+        <span class="badge badge-purple">{{ scenario.category }}</span>
+        <span class="badge {% if scenario.difficulty == 'Beginner' %}badge-green{% elif scenario.difficulty == 'Intermediate' %}badge-amber{% else %}badge-red{% endif %}">
+            {{ scenario.difficulty }}
+        </span>
+        <a href="{{ url_for('next_drill', current_id=scenario.id) }}" class="btn btn-secondary" style="padding: 0.35rem 0.75rem; font-size: 0.82rem;">
+            Skip / Next &rarr;
+        </a>
+    </div>
+</div>
+
+<!-- Category Filter Pills Bar -->
+<div style="display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.75rem; margin-bottom: 1.5rem;">
+    <a href="{{ url_for('drills') }}" class="badge {% if not selected_cat %}badge-cyan{% else %}badge-normal{% endif %}" style="text-decoration: none; padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);">
+        All Vectors (28)
+    </a>
+    {% for cat in all_categories %}
+        <a href="{{ url_for('drills', category=cat) }}" class="badge {% if selected_cat == cat %}badge-cyan{% else %}badge-normal{% endif %}" style="text-decoration: none; padding: 0.4rem 0.8rem; font-size: 0.8rem; border-radius: var(--radius-sm); border: 1px solid var(--border-subtle); color: var(--text-secondary);">
+            {{ cat }}
+        </a>
+    {% endfor %}
+</div>
+
+<!-- Main Drill Runner Split View -->
+<form action="{{ url_for('submit_drill') }}" method="POST">
+    <input type="hidden" name="scenario_id" value="{{ scenario.id }}">
+
+    <div class="drill-runner-container">
+
+        <!-- Left Pane: Realistic Simulated Client Interface -->
+        <div class="sim-client-window">
+            <div class="sim-client-header">
+                <div class="sim-window-dots">
+                    <span class="sim-dot dot-red"></span>
+                    <span class="sim-dot dot-yellow"></span>
+                    <span class="sim-dot dot-green"></span>
+                </div>
+                <div style="font-size: 0.8rem; color: var(--text-muted); font-family: var(--font-mono);">
+                    SECURE-MAIL-CLIENT // INBOX PREVIEW
+                </div>
+                <div style="font-size: 0.75rem; color: var(--accent-cyan); font-family: var(--font-mono);">
+                    POTENTIAL +{{ scenario.points }} PTS
+                </div>
+            </div>
+
+            <div class="sim-client-body">
+                <!-- Message Headers Table -->
+                <div class="email-headers-table">
+                    <div class="header-row">
+                        <span class="header-key">FROM:</span>
+                        <span class="header-val" style="color: var(--accent-cyan);">{{ scenario.sender }}</span>
+                    </div>
+                    <div class="header-row">
+                        <span class="header-key">TO:</span>
+                        <span class="header-val">trainee.analyst@company-internal.local</span>
+                    </div>
+                    <div class="header-row">
+                        <span class="header-key">SUBJECT:</span>
+                        <span class="header-val" style="font-weight: 700; color: #fff;">{{ scenario.subject }}</span>
+                    </div>
+                    <div class="header-row">
+                        <span class="header-key">SECURITY:</span>
+                        <span class="header-val" style="font-size: 0.78rem; color: var(--threat-warning);">
+                            {% if scenario.is_malicious %}
+                                ⚠️ SPF: Neutral | DKIM: None | Inbound Edge Gateway
+                            {% else %}
+                                🔒 SPF: Pass | DKIM: Valid (Verified Domain Certificate)
+                            {% endif %}
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Email / Payload Content Body -->
+                <div class="email-content-box">
+{{ scenario.content }}
+                </div>
+
+                <div style="margin-top: 1rem; display: flex; align-items: center; justify-content: space-between; font-size: 0.8rem; color: var(--text-muted);">
+                    <span>Scenario Identifier: <code>TV-SCN-{{ scenario.id }}</code></span>
+                    <span>Threat Category: <code>{{ scenario.category }}</code></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Pane: Trainee Analysis & Verdict Panel -->
+        <div class="drill-decision-panel">
+            <div>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.35rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <span>🔎</span> Trainee Investigation
+                </h3>
+                <p style="color: var(--text-secondary); font-size: 0.85rem;">
+                    Examine the headers and payload. Select all threat indicators you detect, then issue your security verdict.
+                </p>
+
+                <!-- Indicator Selection Checkboxes -->
+                <div class="indicator-checkbox-group">
+                    <label style="font-size: 0.8rem; font-weight: 600; text-transform: uppercase; color: var(--accent-cyan); letter-spacing: 0.05em; display: block; margin-bottom: 0.6rem;">
+                        Observed Threat Indicators:
+                    </label>
+
+                    {% for ind in indicators %}
+                        <label class="checkbox-item">
+                            <input type="checkbox" name="indicators" value="{{ ind }}">
+                            <span>{{ ind }}</span>
+                        </label>
+                    {% endfor %}
+                    
+                    <label class="checkbox-item">
+                        <input type="checkbox" name="indicators" value="No indicators - Message is Benign">
+                        <span>No indicators &mdash; Message is genuine / benign</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Dual Action Verdict Buttons -->
+            <div>
+                <div style="margin-bottom: 0.75rem; text-align: center;">
+                    <span style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.05em;">Step 2: Select Security Verdict</span>
+                </div>
+
+                <div class="drill-action-buttons">
+                    <button type="submit" name="verdict" value="1" class="btn btn-malicious">
+                        🚨 MALICIOUS THREAT
+                    </button>
+                    <button type="submit" name="verdict" value="0" class="btn btn-safe">
+                        🛡️ SAFE / BENIGN
+                    </button>
+                </div>
+                
+                <p style="text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.75rem;">
+                    Verdict and indicator attribution will be recorded in your SOC profile.
+                </p>
+            </div>
+
+        </div>
+
+    </div>
+</form>
+
+{% endblock %}
